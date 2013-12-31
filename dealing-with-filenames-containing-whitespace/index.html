@@ -31,7 +31,7 @@
               
               <p>File names containing spaces are generally painful to deal with in UNIX from the command line. Say we have a directory with the following two files;</p>
               <pre class="highlight shell">one&#x000A;one love</pre>
-              <p>These days the shell wildcard expansion is smart enough to give a command the proper file names. So <code>rm one*</code> works as expected but as soon as you need to use the find command or any command that is going to read in the file with a space, and pass it to another command there will be trouble.</p>
+              <p>These days the shell wildcard expansion is smart enough to give a command the proper file names. So <code>rm one*</code> works as expected but as soon as you need to use the find command or any command that is going to read in the file name containing a space, and pass it to another command there will be trouble.</p>
               
               <p>Here are some examples;</p>
               <pre class="highlight shell"><span class="gp">$ </span>find . -type f | xargs ls -l&#x000A;ls: love: No such file or directory&#x000A;-rw-r--r--  1 bruce  staff  0 31 Dec 13:58 ./one&#x000A;-rw-r--r--  1 bruce  staff  0 31 Dec 13:58 ./one</pre>
@@ -43,26 +43,26 @@
               
               <h1>A Solution?</h1>
               
-              <p>Even though this has been an issue for many years, it&rsquo;s common to see housekeeping and backup scripts still failing on file names that contain spaces. On some versions of UNIX, the find and xargs commands have an option to deal with spaces in file names. Use the <code>-print0</code> option to the find command and the <code>-0</code> option to the xargs command to have xargs use a NULL character as the terminator. This will work on Linux and Mac but not all versions of Solaris and AIX have these options to find and xargs.</p>
+              <p>Even though this has been an issue for many years, it&rsquo;s common to see housekeeping and backup scripts still failing because of file names that contain spaces. On some versions of UNIX, the find and xargs commands have an option to deal with spaces in file names. Use the <code>-print0</code> option to the find command and the <code>-0</code> option to the xargs command to have find terminate each value with a NULL character and get xargs to use a NULL character as the terminator. This will work on Linux and Mac but not all versions of Solaris and AIX have these options to find and xargs.</p>
               
               <p>Here is an example of using -print0 and -0</p>
-              <pre class="highlight shell"><span class="gp">$ </span>find . -type f -print0 | xargs -0 ls -l&#x000A;-rw-r--r--  1 bruce  staff  0 31 Dec 13:58 ./one&#x000A;-rw-r--r--  1 bruce  staff  0 31 Dec 13:58 ./one love&#x000A;<span class="err">$</span></pre>
+              <pre class="highlight shell"><span class="gp">$ </span>find . -type f -print0 | xargs -0 ls -l&#x000A;-rw-r--r--  1 bruce  staff  0 31 Dec 13:58 ./one&#x000A;-rw-r--r--  1 bruce  staff  0 31 Dec 13:58 ./one love</pre>
               <h1>What to do when using other tools?</h1>
               
-              <p>Even though there are many options to find that allow you to filter the names of the files, it&rsquo;s still not uncommon to need to add a grep or two into the find-xargs pipeline, at which point the -print0 and -0 nolonger work as needed.</p>
+              <p>Even though there are many options to find that allow for filtering, it&rsquo;s still not uncommon to need to add a grep or two into the find-xargs pipeline, at which point the -print0 and -0 nolonger work.</p>
               <pre class="highlight shell"><span class="gp">$ </span>find . -type f -print0 | grep e | xargs -0 ls -l&#x000A;ls: Binary file <span class="o">(</span>standard input<span class="o">)</span> matches&#x000A;: No such file or directory</pre>
               <p>Also, how to handle scenarios similar to;</p>
               <pre class="highlight shell"><span class="gp">$ </span><span class="k">for </span>i <span class="k">in</span> <span class="k">$(</span>ls -1rt | head -n 5<span class="k">)</span>; <span class="k">do </span><span class="nb">echo</span> <span class="nv">$i</span>; <span class="k">done&#x000A;</span>one&#x000A;love&#x000A;one</pre>
-              <p>That ls command above will display the contents of the directory in a single colum order by modification, </p>
+              <p>That ls command above will display the contents of the directory in a single colum in reverse order of modification time. </p>
               
               <p>Now at this point, you are probably thinking that it&rsquo;s time to use Ruby or Python, or maybe even Perl but there is a solution. The shell has an internal variable called IFS, which standards for Internal Field Separator. By default the value of this variable will be a space, a tab and a new line character. On a Mac, using the od command we can see the default value.</p>
               <pre class="highlight shell"><span class="gp">$ </span><span class="nb">echo</span> -n <span class="s2">&quot;</span><span class="nv">$IFS</span><span class="s2">&quot;</span> | od -t a&#x000A;0000000   sp  ht  nl&#x000A;0000003&#x000A;<span class="err">$</span></pre>
-              <p>Changing the value of IFS changes the way that the shell processes the command options. The goal is to change IFS to something that isn&rsquo;t in the filename but is easy enough to add to the filename. Usually this would be a carriage return, so we need to remove the space and tab characters from the IFS variable. Using sed would probably work but it&rsquo;s far easy to save the current value of the IFS variable and then set it to the carriage return.</p>
-              <pre class="highlight shell"><span class="gp">$ </span><span class="nv">origIFS</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$IFS</span><span class="s2">&quot;</span>; <span class="nv">IFS</span><span class="o">=</span><span class="s2">&quot;^M&quot;</span>; <span class="k">for </span>i <span class="k">in</span> <span class="k">$(</span>ls -1rt | head -n 5<span class="k">)</span>; <span class="k">do </span><span class="nb">echo</span> <span class="nv">$i</span>; <span class="k">done</span>; <span class="nv">IFS</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$origIFS</span><span class="s2">&quot;</span>&#x000A;one love&#x000A;one&#x000A;<span class="err">$</span></pre>
+              <p>Changing the value of IFS changes the way that the shell splits up the command options or performance parameter expansion. The goal is to change IFS to something that isn&rsquo;t in the filename but is easy enough to add to the filename. Usually this would be a carriage return, so we need to remove the space and tab characters from the IFS variable. Using sed would probably work but it&rsquo;s far simpler to save the current value of the IFS variable and then set it to the carriage return. The original IFS value will be needed right afterwards.</p>
+              <pre class="highlight shell"><span class="gp">$ </span><span class="nv">origIFS</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$IFS</span><span class="s2">&quot;</span>; <span class="nv">IFS</span><span class="o">=</span><span class="s2">&quot;^M&quot;</span>; <span class="k">for </span>i <span class="k">in</span> <span class="k">$(</span>ls -1rt | head -n 5<span class="k">)</span>; <span class="k">do </span><span class="nb">echo</span> <span class="nv">$i</span>; <span class="k">done</span>; <span class="nv">IFS</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$origIFS</span><span class="s2">&quot;</span>&#x000A;one&#x000A;one love</pre>
               <h2>What is that &ldquo;^M&rdquo; thing?</h2>
               
-              <p>Control-M is a the representation of carriage return. To enter that command type control-v and then control-m. (Control-v will &ldquo;quote&rdquo; the next character that is typed).</p>
-              
+              <p>Control-M is a the representation of carriage return. To enter that command type control-v and then control-m. (Control-v will &ldquo;quote&rdquo; the next character that is typed). If control-v doesn&rsquo;t work, look at the output of the command <code>stty -a</code> for the <code>lnext</code>, e.g.</p>
+              <pre class="highlight shell"><span class="gp">$ </span>stty -a | grep lnext&#x000A;        eol2 <span class="o">=</span> &lt;undef&gt;; erase <span class="o">=</span> ^?; intr <span class="o">=</span> ^C; <span class="nb">kill</span> <span class="o">=</span> ^U; lnext <span class="o">=</span> ^V;</pre>
               <h2>Setting IFS back to the default.</h2>
               
               <p>It&rsquo;s very important to set IFS back to the default value as soon as you have finished. Forgetting to do so will result is unexpected behaviour.</p>
@@ -80,6 +80,8 @@
               <p>Set the IFS variable to be the carriage return and make sure that each file name is piped or expanded by the shell with the new line character intact, which happens by default.</p>
               
               <p>The alert reader will notice that I didn&rsquo;t make any comments about zsh. zsh does have an IFS variable, but of course zsh has additional options and I didn&rsquo;t want to have spend time commenting on those. The sample code in this blog post works on zsh.</p>
+              
+              <p>If you decide to use this method with the xargs, remember to have xargs run the command on each value read from stdin. Normally this would mean giving xargs the option <code>-n 1</code>.</p>
             </div>
           </div>
         </div>
