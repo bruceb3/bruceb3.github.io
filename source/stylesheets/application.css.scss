@@ -7,7 +7,6 @@ html, body {
 body {
   -webkit-font-smoothing: antialiased;
   background: #FCFCFC;
-  background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #D5E6F2), color-stop(0.5, #EFEFDF), color-stop(1, #FCFCFC));
   font-family: "source-sans-pro";
 }
 
@@ -28,6 +27,7 @@ header, footer {
   a:hover {
     text-decoration: none;
   }
+
 }
 
 header {
@@ -46,6 +46,12 @@ header {
   p, ul, ol {
     font-family: "freight-text-pro";
     font-size: 1.625em;
+  }
+
+  h1, h2, h3, {
+    margin-left: 2em;
+    font-size: 1.7em;
+    &:first-letter { text-decoration: underline; }
   }
 }
 
@@ -67,4 +73,11 @@ header {
 hr.footer {
   border-top: 1px solid #5A5A5A;
   opacity: 0.1;
+}
+
+.selfdescription {
+}
+
+.header {
+  margin-bottom: 3em;
 }
