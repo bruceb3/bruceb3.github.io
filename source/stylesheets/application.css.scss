@@ -1,0 +1,70 @@
+@import "bootstrap";
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  background: #FCFCFC;
+  background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #D5E6F2), color-stop(0.5, #EFEFDF), color-stop(1, #FCFCFC));
+  font-family: "source-sans-pro";
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 200;
+}
+
+a:hover {
+  color: #ef502a;
+  text-decoration: none;
+}
+
+header, footer {
+  a {
+    color: #3C4650;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
+}
+
+header {
+  text-align: center;
+}
+
+.container {
+  max-width: 750px;
+}
+
+.post {
+  padding-bottom: 54px;
+}
+
+.post .text {
+  p, ul, ol {
+    font-family: "freight-text-pro";
+    font-size: 1.625em;
+  }
+}
+
+.avatar {
+  text-align: center;
+  max-width: 125px;
+  overflow: hidden;
+
+  img {
+    border-radius: 100%;
+    width: 100%;
+  }
+}
+
+.time {
+  opacity: 0.4;
+}
+
+hr.footer {
+  border-top: 1px solid #5A5A5A;
+  opacity: 0.1;
+}

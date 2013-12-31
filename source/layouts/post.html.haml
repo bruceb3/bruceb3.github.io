@@ -1,0 +1,11 @@
+- wrap_layout :application do
+  - content_for :title do
+    = current_page.title
+
+  .post
+    .header
+      .time= current_page.date.strftime("%B %e, %Y")
+      %h1= current_page.title
+
+    .text
+      = find_and_preserve current_page.body

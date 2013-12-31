@@ -1,0 +1,23 @@
+---
+pageable: true
+per_page: 5
+---
+
+- page_articles.each do |current_page|
+  .post
+    .header
+      .time= current_page.date.strftime("%B %e, %Y")
+      %h1= link_to current_page.title, current_page.url
+
+    .text
+      = find_and_preserve current_page.body
+
+.pager
+  - if page_number < num_pages
+    %span.previous
+      = link_to next_page do
+        Older Posts
+  - if page_number > 1
+    %span.next
+      = link_to prev_page do
+        Newer Posts
